@@ -1,0 +1,36 @@
+{
+  "name": "e6_environmental_change",
+  "baseConfig": "../default.json",
+  "seeds": 10,
+  "seedStart": 1000,
+  "sampleInterval": 250,
+  "description": "Stable climate vs a single +1.0 temperature shift at tick 6000 vs a continuously oscillating climate (amplitude 0.8, period 1500).",
+  "hypothesis": "How do populations respond to abrupt vs recurring environmental change \u2014 in size, recovery time, thermal optimum and diversity?",
+  "ticks": 15000,
+  "recoveryAfterTick": 6000,
+  "conditions": [
+    {
+      "name": "stable",
+      "overrides": {}
+    },
+    {
+      "name": "abrupt_shift",
+      "overrides": {
+        "environment.events": [
+          {
+            "tick": 6000,
+            "type": "temperatureShift",
+            "value": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "name": "oscillating",
+      "overrides": {
+        "environment.cycleAmplitude": 0.8,
+        "environment.cyclePeriod": 1500
+      }
+    }
+  ]
+}

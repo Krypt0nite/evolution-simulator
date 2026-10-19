@@ -1,0 +1,33 @@
+{
+  "name": "e1_mutation_rate",
+  "baseConfig": "../default.json",
+  "seeds": 10,
+  "seedStart": 1000,
+  "sampleInterval": 250,
+  "description": "Fixed per-gene mutation probability: low (0.005), medium (0.05), high (0.25). All else equal.",
+  "hypothesis": "Does mutation rate change how much genetic diversity is maintained, how far traits move, and whether the population persists?",
+  "ticks": 15000,
+  "conditions": [
+    {
+      "name": "low_0.005",
+      "overrides": {
+        "mutation.mode": "fixed",
+        "mutation.fixedRate": 0.005
+      }
+    },
+    {
+      "name": "medium_0.05",
+      "overrides": {
+        "mutation.mode": "fixed",
+        "mutation.fixedRate": 0.05
+      }
+    },
+    {
+      "name": "high_0.25",
+      "overrides": {
+        "mutation.mode": "fixed",
+        "mutation.fixedRate": 0.25
+      }
+    }
+  ]
+}

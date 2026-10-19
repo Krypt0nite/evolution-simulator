@@ -1,0 +1,31 @@
+{
+  "name": "e4_predator_pressure",
+  "baseConfig": "../default.json",
+  "seeds": 10,
+  "seedStart": 1000,
+  "sampleInterval": 250,
+  "description": "Prey alone vs prey with coevolving predators (introduced at tick 1500) vs predators with prey speed held fixed (no speed arms race).",
+  "hypothesis": "How does predation change prey traits (speed, size, caution), and can predators persist when prey are free to evolve escape speed?",
+  "ticks": 20000,
+  "conditions": [
+    {
+      "name": "no_predators",
+      "overrides": {}
+    },
+    {
+      "name": "predators_coevolving",
+      "overrides": {
+        "predators.enabled": true
+      }
+    },
+    {
+      "name": "predators_prey_speed_fixed",
+      "overrides": {
+        "predators.enabled": true,
+        "population.lockedGenes": [
+          "speed"
+        ]
+      }
+    }
+  ]
+}

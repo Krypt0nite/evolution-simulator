@@ -1,0 +1,32 @@
+{
+  "name": "e3_resource_distribution",
+  "baseConfig": "../default.json",
+  "seeds": 10,
+  "seedStart": 1000,
+  "sampleInterval": 250,
+  "description": "Same total capacity scale; food spread uniformly, in static Gaussian patches, or in patches that relocate every 1500 ticks.",
+  "hypothesis": "How does the spatial and temporal structure of food change population size, movement traits (speed, vision) and diversity?",
+  "ticks": 15000,
+  "conditions": [
+    {
+      "name": "uniform",
+      "overrides": {
+        "resources.distribution": "uniform",
+        "resources.capacity": 4.0
+      }
+    },
+    {
+      "name": "clustered",
+      "overrides": {
+        "resources.distribution": "clustered"
+      }
+    },
+    {
+      "name": "shifting",
+      "overrides": {
+        "resources.distribution": "shifting",
+        "resources.shiftPeriod": 1500
+      }
+    }
+  ]
+}

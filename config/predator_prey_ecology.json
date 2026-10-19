@@ -1,0 +1,105 @@
+{
+  "analytics": {
+    "clusterInterval": 250,
+    "clusterThreshold": 0.2,
+    "diversitySample": 160,
+    "maxLineageRecords": 3000000,
+    "maxSamples": 20000,
+    "sampleInterval": 50
+  },
+  "controller": {
+    "neuralHidden": 8,
+    "type": "utility"
+  },
+  "environment": {
+    "cycleAmplitude": 0,
+    "cyclePeriod": 4000,
+    "events": [],
+    "hazards": [],
+    "temperatureGradient": 0.6,
+    "temperatureOffset": 0
+  },
+  "mutation": {
+    "fixedRate": 0.05,
+    "largeProb": 0.05,
+    "largeScale": 0.3,
+    "mode": "evolvable",
+    "scale": 0.04
+  },
+  "name": "predator_prey_ecology",
+  "organisms": {
+    "attentionLimit": 24,
+    "basalRate": 0.035,
+    "biteRate": 1.2,
+    "contactRadius": 1.2,
+    "contestWeight": 1,
+    "energyPerSize": 60,
+    "lifespanCost": 0.25,
+    "moveCost": 0.012,
+    "senescenceRate": 0.02,
+    "thermalCost": 0.12,
+    "visionCost": 0.0008
+  },
+  "population": {
+    "initialEnergyFrac": 0.6,
+    "initialPrey": 400,
+    "maxPopulation": 20000,
+    "lockedGenes": [
+      "speed"
+    ]
+  },
+  "predators": {
+    "basalMultiplier": 0.7,
+    "captureBase": 0.45,
+    "enabled": true,
+    "groupDefense": 0.12,
+    "handlingTime": 40,
+    "huntCost": 0.25,
+    "initialCount": 40,
+    "initialTraits": {
+      "speed": [
+        1.4,
+        2
+      ],
+      "vision": [
+        18,
+        30
+      ]
+    },
+    "interference": 0.3,
+    "introduceAtTick": 1500,
+    "meatAssimilation": 1.3,
+    "minVision": 0,
+    "sizeDefense": 0.6,
+    "storageMultiplier": 3,
+    "strikeRange": 2.5
+  },
+  "reproduction": {
+    "compatibilityThreshold": 0.35,
+    "cooldown": 25,
+    "enabled": true,
+    "mode": "asexual",
+    "overheadFrac": 0.15,
+    "thresholdFrac": 0.6
+  },
+  "resources": {
+    "backgroundFraction": 0.12,
+    "capacity": 16,
+    "cellSize": 5,
+    "distribution": "clustered",
+    "initialFill": 0.8,
+    "patchCount": 7,
+    "patchRadius": 55,
+    "regrowthRate": 0.03,
+    "seasonAmplitude": 0,
+    "seasonPeriod": 2000,
+    "seedRate": 0.0005,
+    "shiftPeriod": 3000
+  },
+  "seed": 42,
+  "version": 1,
+  "world": {
+    "height": 400,
+    "width": 600
+  }
+}

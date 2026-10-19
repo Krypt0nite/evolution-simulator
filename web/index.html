@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EvoLab evolution simulator</title>
+  <meta name="description" content="Watch virtual organisms evolve in your browser: a deterministic C++ evolution simulator compiled to WebAssembly." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10.5' fill='%230a111d' stroke='%234cc9e0' stroke-width='1.4'/%3E%3Cpath d='M9 14.5a3 3 0 1 1 3.6-4.6l4.4-1.4-2.6 3.8a3 3 0 0 1-5.4 2.2z' fill='%234cc9e0'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./src/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" aria-hidden="true" class="brand-mark"><circle cx="12" cy="12" r="10.5" /><path d="M9 14.5a3 3 0 1 1 3.6-4.6l4.4-1.4-2.6 3.8a3 3 0 0 1-5.4 2.2z" /></svg>
+      <span class="brand-name">EvoLab</span>
+    </div>
+    <div class="controls" role="toolbar" aria-label="Simulation controls">
+      <button id="btn-run" class="primary" title="Run or pause (Space)">Run</button>
+      <button id="btn-step" title="Advance one tick (.)">Step</button>
+      <button id="btn-reset" title="Restart from the current config and seed">Reset</button>
+      <button id="btn-more" class="more-toggle" aria-expanded="false" aria-controls="controls-extra">Settings</button>
+      <div class="controls-extra" id="controls-extra">
+      <label class="inline">Speed
+        <select id="speed" title="Simulation ticks per animation frame">
+          <option value="1">1×</option><option value="2">2×</option><option value="5" selected>5×</option>
+          <option value="10">10×</option><option value="25">25×</option><option value="50">50×</option>
+          <option value="200">200×</option><option value="max">Max</option>
+        </select>
+      </label>
+      <label class="inline">World
+        <select id="preset" title="Configuration preset"></select>
+      </label>
+      <label class="inline">Seed <input id="seed" type="number" min="0" step="1" /></label>
+      <button id="btn-newseed" title="Restart with a random seed">New seed</button>
+      </div>
+    </div>
+    <button id="btn-help" class="help" title="What is EvoLab?" aria-label="About EvoLab">?</button>
+    <dl class="status">
+      <div><dt>Tick</dt><dd id="st-tick">0</dd></div>
+      <div><dt>Organisms</dt><dd id="st-pop">0</dd></div>
+      <div><dt>ms/tick</dt><dd id="st-ms">–</dd></div>
+    </dl>
+  </header>
+
+  <div id="banner" class="banner" hidden></div>
+
+  <main class="main">
+    <section class="stage" aria-label="World">
+      <div class="stage-bar">
+        <p class="state-line" id="state-line" aria-live="polite"></p>
+        <div class="legend" id="legend"></div>
+      </div>
+      <div class="canvas-wrap" id="canvas-wrap">
+        <canvas id="world"></canvas>
+        <div class="paused-cta" id="paused-cta" hidden>
+          <span id="paused-text"></span>
+          <button id="cta-run" class="primary">Start evolution</button>
+        </div>
+        <div class="toasts" id="toasts" aria-live="polite" aria-label="Notifications"></div>
+      </div>
+      <div class="stage-foot">
+        <span class="stage-hint hint-mouse">Scroll to zoom, drag to pan, click an organism to inspect. F fits the plate.</span>
+        <span class="stage-hint hint-touch">Drag to pan, pinch to zoom, tap an organism to inspect.</span>
+        <button id="btn-fit" class="small" title="Fit the whole plate in view (F)">Fit plate</button>
+      </div>
+    </section>
+
+    <aside class="rail">
+      <nav class="tabs" role="tablist">
+        <button role="tab" data-tab="live" aria-selected="true">Live</button>
+        <button role="tab" data-tab="inspect">Inspect</button>
+        <button role="tab" data-tab="environment">Environment</button>
+        <button role="tab" data-tab="experiments">Experiments</button>
+        <button role="tab" data-tab="config">Config</button>
+      </nav>
+
+      <div class="panel" data-panel="live">
+        <p class="note awaiting" id="awaiting">Charts and trends fill in once the simulation runs. Press <b>Run</b> (or Space) to start.</p>
+        <dl class="readout" id="readout"></dl>
+        <details class="glossary">
+          <summary>What do these numbers measure?</summary>
+          <dl id="glossary"></dl>
+        </details>
+        <h3>Observed in this run</h3>
+        <p class="note">Measured directly from the simulation, with the tick it happened. Nothing here is a prediction or an explanation.</p>
+        <ol class="obs-log" id="obs-log"></ol>
+        <h3>Trait change since tick 0</h3>
+        <div class="table-wrap"><table class="table" id="trait-change"></table></div>
+        <div class="interpret">
+          <b>Interpretation, not a measurement.</b>
+          A trait that shifts in one run may reflect selection, but random genetic drift in a few hundred
+          organisms can produce shifts of similar size. Treat a change as evidence of selection only when it
+          repeats across many seeds and differs from a control condition: use the Experiments tab for that.
+        </div>
+        <h3>Population</h3>
+        <div id="chart-pop" class="chart"></div>
+        <h3 class="with-control">Trait mean ± SD
+          <select id="trait-select"></select>
+        </h3>
+        <div id="chart-trait" class="chart"></div>
+        <h3>Current distribution</h3>
+        <canvas id="hist" class="hist" height="110"></canvas>
+        <h3>Diversity and food</h3>
+        <div id="chart-div" class="chart"></div>
+        <h3>Lineages</h3>
+        <p class="note">Share of the living population descended from each founder. Click a band to highlight that lineage on the plate.</p>
+        <canvas id="muller" class="muller" height="120"></canvas>
+        <ol class="lineage-list" id="lineage-list"></ol>
+        <h3>Genetic clusters</h3>
+        <p class="note">Groups of similar genomes (distance threshold from the config). Clusters indicate divergence; they are not proof of separate species.</p>
+        <div class="table-wrap"><table class="table" id="cluster-table"></table></div>
+        <h3>Energy budget</h3>
+        <table class="table" id="ledger-table"></table>
+      </div>
+
+      <div class="panel" data-panel="inspect" hidden>
+        <div id="inspector"><p class="empty">Click an organism on the plate to inspect its genome, behaviour and family.</p></div>
+      </div>
+
+      <div class="panel" data-panel="environment" hidden>
+        <h3>Display</h3>
+        <div class="toggles">
+          <label><input type="checkbox" id="lyr-food" checked /> Food</label>
+          <label><input type="checkbox" id="lyr-temperature" /> Temperature</label>
+          <label><input type="checkbox" id="lyr-hazards" checked /> Hazards</label>
+          <label><input type="checkbox" id="lyr-vision" /> Vision radii</label>
+          <label><input type="checkbox" id="lyr-grid" checked /> Grid</label>
+        </div>
+        <label class="field">Colour organisms by
+          <select id="color-mode">
+            <option value="lineage">Lineage (founder)</option>
+            <option value="cluster">Genetic cluster</option>
+            <option value="energy">Energy reserve</option>
+            <option value="generation">Generation</option>
+          </select>
+        </label>
+
+        <h3>Change conditions</h3>
+        <p class="note">Changes take effect on the next tick and are recorded in the config, so saving the config and seed reproduces this run exactly.</p>
+        <div class="env-grid">
+          <label>Food capacity <output id="out-food">1.00×</output>
+            <input type="range" id="env-food" min="0" max="2" step="0.05" value="1" /></label>
+          <button data-env="foodMultiplier">Apply</button>
+
+          <label>Regrowth rate <output id="out-regrow">0.030</output>
+            <input type="range" id="env-regrow" min="0" max="0.1" step="0.005" value="0.03" /></label>
+          <button data-env="setRegrowth">Apply</button>
+
+          <label>Temperature offset <output id="out-temp">0.00</output>
+            <input type="range" id="env-temp" min="-1.5" max="1.5" step="0.05" value="0" /></label>
+          <button data-env="temperatureShift">Apply</button>
+
+          <label>Hazard radius <output id="out-hz-r">40</output>
+            <input type="range" id="env-hz-r" min="10" max="150" step="5" value="40" /></label>
+          <button data-tool="addHazard">Place on plate</button>
+
+          <label>Hazard drain per tick <output id="out-hz-d">0.50</output>
+            <input type="range" id="env-hz-d" min="0.05" max="3" step="0.05" value="0.5" /></label>
+          <button data-env="clearHazards">Clear hazards</button>
+
+          <label>Depletion radius <output id="out-dep-r">60</output>
+            <input type="range" id="env-dep-r" min="10" max="200" step="5" value="60" /></label>
+          <button data-tool="depleteRegion">Deplete area</button>
+
+          <label>Predators to introduce
+            <input type="number" id="env-pred" min="1" max="500" value="20" /></label>
+          <button data-env="introducePredators">Introduce</button>
+
+          <label>Organisms to remove at random
+            <input type="number" id="env-cull" min="1" max="10000" value="100" /></label>
+          <button data-env="removeRandom">Remove</button>
+
+          <span class="env-wide">Food patch positions</span>
+          <button data-env="shiftResources">Relocate patches</button>
+        </div>
+        <h3>Event log</h3>
+        <ol class="event-log" id="event-log"></ol>
+      </div>
+
+      <div class="panel" data-panel="experiments" hidden>
+        <p class="note">Batch experiments run many independent simulations without rendering, in a background worker. Each seed is one replicate; conditions share seeds.</p>
+        <label class="field">Experiment <select id="exp-select"></select></label>
+        <div id="exp-about" class="about"></div>
+        <div class="row">
+          <label class="field">Seeds <input type="number" id="exp-seeds" min="2" max="100" /></label>
+          <label class="field">Ticks per run <input type="number" id="exp-ticks" min="100" step="100" /></label>
+        </div>
+        <div class="row">
+          <button id="exp-run" class="primary">Run experiment</button>
+          <button id="exp-cancel" hidden>Cancel</button>
+        </div>
+        <div id="exp-progress" class="progress" hidden><div class="bar"></div><span></span></div>
+        <div id="exp-results" hidden>
+          <h3 class="with-control">Trajectory across seeds
+            <select id="exp-metric"></select>
+          </h3>
+          <div id="exp-chart" class="chart"></div>
+          <h3>Outcomes per condition</h3>
+          <div class="table-wrap"><table class="table" id="exp-table"></table></div>
+          <p class="note" id="exp-footnote"></p>
+          <div class="row">
+            <button id="exp-dl-runs">Download runs.csv</button>
+            <button id="exp-dl-summary">Download summary.json</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" data-panel="config" hidden>
+        <h3>Configuration</h3>
+        <p class="note">Edit the JSON and apply to restart. The engine validates every field and reports all problems at once.</p>
+        <textarea id="cfg-text" spellcheck="false" aria-label="Configuration JSON"></textarea>
+        <div id="cfg-msg" class="msg" role="status"></div>
+        <div class="row">
+          <button id="cfg-validate">Validate</button>
+          <button id="cfg-apply" class="primary">Apply and restart</button>
+        </div>
+        <div class="row">
+          <button id="cfg-download">Download config</button>
+          <label class="button">Load config file<input type="file" id="cfg-file" accept=".json,application/json" hidden /></label>
+        </div>
+        <h3>Checkpoints</h3>
+        <p class="note">A checkpoint stores the complete state; loading one resumes exactly where it left off (same engine version).</p>
+        <div class="row">
+          <button id="ckpt-save">Download checkpoint</button>
+          <label class="button">Load checkpoint<input type="file" id="ckpt-file" accept=".evockpt" hidden /></label>
+        </div>
+        <label class="field">Automatic in-memory checkpoints
+          <select id="ckpt-every">
+            <option value="0">Off</option><option value="500">Every 500 ticks</option>
+            <option value="1000" selected>Every 1,000 ticks</option><option value="2500">Every 2,500 ticks</option>
+          </select>
+        </label>
+        <h3>Genes</h3>
+        <table class="table genes" id="gene-table"></table>
+        <p class="note" id="engine-version"></p>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="timeline" aria-label="Evolution timeline">
+    <div class="timeline-chart">
+      <div class="timeline-head">
+        <h3>Evolution timeline</h3>
+        <label class="inline">Overlay <select id="tl-trait"></select></label>
+        <span class="note">Dotted lines mark restorable checkpoints. Click the chart to compare that moment with now.</span>
+      </div>
+      <div id="chart-timeline" class="chart"></div>
+    </div>
+    <div class="timeline-compare" id="tl-compare"><p class="empty">Select a moment on the timeline.</p></div>
+  </footer>
+
+  <div class="intro" id="intro" role="dialog" aria-modal="true" aria-labelledby="intro-title" hidden>
+    <div class="intro-card">
+      <h2 id="intro-title">Watch evolution happen</h2>
+      <p class="intro-lead">EvoLab is a population of virtual organisms on a petri-dish "plate". Nobody tells them which
+        traits are best: whatever helps them survive and reproduce becomes more common, generation after generation.</p>
+      <ul class="intro-points">
+        <li><i class="dot org"></i><div><b>Organisms</b>Each teardrop is one organism, pointing where it is heading. It
+          senses what is within its vision, eats, flees, mates and spends energy. It dies of starvation, old age,
+          hazards or predators. Colour shows which original founder it descends from.</div></li>
+        <li><i class="dot food"></i><div><b>Food</b>The green glow is plant biomass. It regrows over time, richest in
+          patches, and is the prey's only source of energy, so organisms compete for it.</div></li>
+        <li><i class="dot gene"></i><div><b>Genetic traits</b>Every organism carries a genome of <span id="intro-genes">heritable</span>
+          genes: speed, vision, body size, maturity age, metabolism, caution and more. Offspring inherit their parents'
+          genes with small random mutations.</div></li>
+        <li><i class="dot evo"></i><div><b>Evolution</b>Organisms whose traits suit the current conditions leave more
+          offspring, so trait averages shift. Chance (genetic drift) shifts them too, especially in small populations.
+          Follow the change in the Live tab and the timeline at the bottom.</div></li>
+      </ul>
+      <div class="intro-actions">
+        <button id="intro-start" class="primary big">Start evolution</button>
+        <button id="intro-explore">Look around first</button>
+      </div>
+      <label class="intro-auto"><input type="checkbox" id="intro-autostart" /> Skip this and start automatically next time</label>
+    </div>
+  </div>
+
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>

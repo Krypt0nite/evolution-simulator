@@ -1,0 +1,28 @@
+{
+  "name": "evolab-web",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Browser dashboard for the EvoLab evolution simulator (C++ engine via WebAssembly)",
+  "scripts": {
+    "build:wasm": "node ../scripts/build_wasm.mjs",
+    "sync": "node scripts/sync-assets.mjs",
+    "predev": "npm run sync",
+    "dev": "vite",
+    "prebuild": "npm run sync",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "deploy": "npm run build && wrangler deploy",
+    "test:e2e": "node e2e/e2e.mjs"
+  },
+  "dependencies": {
+    "uplot": "1.6.32"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^24.43.1",
+    "typescript": "5.6.3",
+    "vite": "5.4.21",
+    "wrangler": "^4.151.1"
+  }
+}

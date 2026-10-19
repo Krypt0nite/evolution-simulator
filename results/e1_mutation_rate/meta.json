@@ -1,0 +1,8 @@
+{
+  "configVersion": 1,
+  "engineVersion": "1.0.0",
+  "experiment": "e1_mutation_rate",
+  "generatedAt": "2026-10-12T08:24:58Z",
+  "runs": 30,
+  "wallSeconds": 74.185576862000005
+}

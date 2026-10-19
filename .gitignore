@@ -1,0 +1,15 @@
+# build trees
+build/
+build-*/
+# web
+web/node_modules/
+web/dist/
+web/public/configs/
+# local outputs
+*.evockpt
+/results/*/scratch/
+# local toolchain (portable Python + Emscripten SDK, see scripts/build_wasm.mjs)
+.tools/
+# wrangler state
+.wrangler/
+web/.wrangler/

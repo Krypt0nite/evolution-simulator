@@ -1,0 +1,36 @@
+{
+  "name": "e7_behavioral_strategies",
+  "baseConfig": "../default.json",
+  "seeds": 10,
+  "seedStart": 1000,
+  "sampleInterval": 250,
+  "description": "Utility controller with evolvable weights vs utility controller with weights frozen at founder values vs an evolved neural-network controller (random initial weights).",
+  "hypothesis": "Under identical ecology and seeds, do different decision architectures differ in population size, foraging efficiency and the traits they evolve?",
+  "ticks": 15000,
+  "conditions": [
+    {
+      "name": "utility_evolving",
+      "overrides": {}
+    },
+    {
+      "name": "utility_frozen_weights",
+      "overrides": {
+        "population.lockedGenes": [
+          "wForage",
+          "wExplore",
+          "wRest",
+          "wFlee",
+          "wMate",
+          "social",
+          "riskTolerance"
+        ]
+      }
+    },
+    {
+      "name": "neural",
+      "overrides": {
+        "controller.type": "neural"
+      }
+    }
+  ]
+}

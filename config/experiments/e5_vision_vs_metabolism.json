@@ -1,0 +1,58 @@
+{
+  "name": "e5_vision_vs_metabolism",
+  "baseConfig": "../default.json",
+  "seeds": 10,
+  "seedStart": 1000,
+  "sampleInterval": 250,
+  "description": "Vision radius fixed at 6, 20 or 45 (vision costs maintenance energy), compared with freely evolving vision.",
+  "hypothesis": "Does better sensing pay for its energetic cost? Where does vision settle when it is free to evolve?",
+  "ticks": 15000,
+  "conditions": [
+    {
+      "name": "evolvable",
+      "overrides": {}
+    },
+    {
+      "name": "vision_6",
+      "overrides": {
+        "population.initialTraits": {
+          "vision": [
+            6,
+            6
+          ]
+        },
+        "population.lockedGenes": [
+          "vision"
+        ]
+      }
+    },
+    {
+      "name": "vision_20",
+      "overrides": {
+        "population.initialTraits": {
+          "vision": [
+            20,
+            20
+          ]
+        },
+        "population.lockedGenes": [
+          "vision"
+        ]
+      }
+    },
+    {
+      "name": "vision_45",
+      "overrides": {
+        "population.initialTraits": {
+          "vision": [
+            45,
+            45
+          ]
+        },
+        "population.lockedGenes": [
+          "vision"
+        ]
+      }
+    }
+  ]
+}

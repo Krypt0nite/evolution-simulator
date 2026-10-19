@@ -1,0 +1,10 @@
+// Cloudflare Workers static-assets deployment of the browser lab (free plan, no card).
+// Deploy from web/: `npm run deploy` (builds dist/ first, then `wrangler deploy`).
+{
+  "name": "evolution-simulator",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  }
+}
